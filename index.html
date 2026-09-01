@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --ink: #14213D;
@@ -414,6 +415,98 @@
     font-size: 15px;
   }
   .loading-veil.hidden { display: none; }
+
+  /* ---------- Dashboard ---------- */
+  .range-chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .range-chip {
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    color: var(--text-muted);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+  }
+  .range-chip.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+  .custom-range-row {
+    display: none;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .custom-range-row.active { display: flex; }
+  .custom-range-row input {
+    flex: 1;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dash-total {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .dash-total .amount {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .dash-total .label {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .dash-section {
+    margin-bottom: 30px;
+  }
+  .dash-section h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 14px;
+  }
+
+  .chart-wrap { position: relative; height: 220px; margin-bottom: 14px; }
+  .chart-wrap.small { height: 180px; }
+
+  .legend-list { display: flex; flex-direction: column; gap: 10px; }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { flex: 1; color: var(--text); }
+  .legend-amount { font-family: 'Fraunces', serif; font-weight: 600; color: var(--ink); }
+  .legend-pct { color: var(--text-muted); font-size: 12px; width: 38px; text-align: right; }
+
+  .top-days-list { display: flex; flex-direction: column; }
+  .top-day-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13.5px;
+  }
+  .top-day-row:last-child { border-bottom: none; }
+  .top-day-amount { font-family: 'Fraunces', serif; font-weight: 600; color: var(--ink); }
 </style>
 </head>
 <body>
@@ -427,6 +520,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="add">Add</button>
       <button class="tab-btn" data-tab="history">History</button>
+      <button class="tab-btn" data-tab="dashboard">Dashboard</button>
     </div>
   </header>
 
@@ -505,6 +599,51 @@
       <div class="empty-state" id="emptyState" style="display:none;">
         <div class="glyph">₹</div>
         <div>No expenses match yet.</div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD VIEW -->
+    <section class="view" id="view-dashboard">
+      <div class="range-chips">
+        <button class="range-chip active" data-range="thisMonth">This month</button>
+        <button class="range-chip" data-range="lastMonth">Last month</button>
+        <button class="range-chip" data-range="custom">Custom</button>
+      </div>
+      <div class="custom-range-row" id="dashCustomRow">
+        <input type="date" id="dashFrom" />
+        <input type="date" id="dashTo" />
+      </div>
+
+      <div class="dash-total">
+        <div class="amount" id="dashTotal">₹0</div>
+        <div class="label" id="dashRangeLabel">This month</div>
+      </div>
+
+      <div class="dash-section">
+        <h3>By category</h3>
+        <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
+        <div class="legend-list" id="legendCategory"></div>
+      </div>
+
+      <div class="dash-section">
+        <h3>By payment mode</h3>
+        <div class="chart-wrap small"><canvas id="chartPayment"></canvas></div>
+        <div class="legend-list" id="legendPayment"></div>
+      </div>
+
+      <div class="dash-section">
+        <h3>Monthly trend</h3>
+        <div class="chart-wrap small"><canvas id="chartTrend"></canvas></div>
+      </div>
+
+      <div class="dash-section">
+        <h3>Top spending days</h3>
+        <div class="top-days-list" id="topDaysList"></div>
+      </div>
+
+      <div class="empty-state" id="dashEmptyState" style="display:none;">
+        <div class="glyph">₹</div>
+        <div>No expenses in this range yet.</div>
       </div>
     </section>
   </main>
@@ -610,7 +749,11 @@
 
   // ---------- Tabs ----------
   var tabButtons = document.querySelectorAll('.tab-btn');
-  var views = { add: document.getElementById('view-add'), history: document.getElementById('view-history') };
+  var views = {
+    add: document.getElementById('view-add'),
+    history: document.getElementById('view-history'),
+    dashboard: document.getElementById('view-dashboard')
+  };
   tabButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
       tabButtons.forEach(function (b) { b.classList.remove('active'); });
@@ -619,6 +762,7 @@
       views[btn.dataset.tab].classList.add('active');
       if (btn.dataset.tab === 'add' && state.editingId === null) resetForm();
       if (btn.dataset.tab === 'history') renderHistory();
+      if (btn.dataset.tab === 'dashboard') renderDashboard();
     });
   });
 
@@ -829,6 +973,179 @@
   ['filterCategory', 'filterFrom', 'filterTo'].forEach(function (id) {
     document.getElementById(id).addEventListener('change', renderHistory);
   });
+
+  // ---------- Dashboard ----------
+  var CAT_COLORS_HEX = ['#C98A2C', '#5B7B7A', '#8E5B4E', '#5C6BC0', '#7A8B4E', '#A65D8B', '#4E7A8B', '#9B7B4E'];
+
+  function colorHexFor(name) {
+    var hash = 0;
+    for (var i = 0; i < (name || '').length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+    return CAT_COLORS_HEX[hash % CAT_COLORS_HEX.length];
+  }
+
+  state.dashRangeType = 'thisMonth';
+  var chartCategoryInstance = null, chartPaymentInstance = null, chartTrendInstance = null;
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function monthBounds(year, monthIndex) {
+    var first = new Date(year, monthIndex, 1);
+    var last = new Date(year, monthIndex + 1, 0);
+    var toIso = function (d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); };
+    return { from: toIso(first), to: toIso(last) };
+  }
+
+  function getDashRange() {
+    var now = new Date();
+    if (state.dashRangeType === 'thisMonth') {
+      return monthBounds(now.getFullYear(), now.getMonth());
+    }
+    if (state.dashRangeType === 'lastMonth') {
+      return monthBounds(now.getFullYear(), now.getMonth() - 1);
+    }
+    var from = document.getElementById('dashFrom').value;
+    var to = document.getElementById('dashTo').value;
+    return { from: from || todayStr(), to: to || todayStr() };
+  }
+
+  document.querySelectorAll('.range-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.range-chip').forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      state.dashRangeType = chip.dataset.range;
+      document.getElementById('dashCustomRow').classList.toggle('active', state.dashRangeType === 'custom');
+      if (state.dashRangeType !== 'custom') renderDashboard();
+    });
+  });
+  ['dashFrom', 'dashTo'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', function () {
+      if (state.dashRangeType === 'custom') renderDashboard();
+    });
+  });
+
+  function renderDashboard() {
+    if (typeof Chart === 'undefined') return;
+
+    var range = getDashRange();
+    var filtered = state.expenses.filter(function (e) { return e.date >= range.from && e.date <= range.to; });
+
+    var rangeLabels = { thisMonth: 'This month', lastMonth: 'Last month', custom: formatDateDisplay(range.from) + ' – ' + formatDateDisplay(range.to) };
+    document.getElementById('dashRangeLabel').textContent = rangeLabels[state.dashRangeType];
+
+    var total = filtered.reduce(function (s, e) { return s + Number(e.amount); }, 0);
+    document.getElementById('dashTotal').textContent = formatMoney(total);
+
+    var sections = document.querySelectorAll('#view-dashboard .dash-section');
+    var dashEmpty = document.getElementById('dashEmptyState');
+    if (filtered.length === 0) {
+      sections.forEach(function (s) { s.style.display = 'none'; });
+      dashEmpty.style.display = 'block';
+      return;
+    }
+    sections.forEach(function (s) { s.style.display = 'block'; });
+    dashEmpty.style.display = 'none';
+
+    // ---- By category ----
+    var catTotals = {};
+    filtered.forEach(function (e) { catTotals[e.category] = (catTotals[e.category] || 0) + Number(e.amount); });
+    var catEntries = Object.keys(catTotals).map(function (k) { return [k, catTotals[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+
+    if (chartCategoryInstance) chartCategoryInstance.destroy();
+    chartCategoryInstance = new Chart(document.getElementById('chartCategory'), {
+      type: 'doughnut',
+      data: {
+        labels: catEntries.map(function (e) { return e[0]; }),
+        datasets: [{ data: catEntries.map(function (e) { return e[1]; }), backgroundColor: catEntries.map(function (e) { return colorHexFor(e[0]); }), borderWidth: 0 }]
+      },
+      options: {
+        cutout: '68%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + ctx.label + ': ' + formatMoney(ctx.parsed); } } } },
+        maintainAspectRatio: false
+      }
+    });
+
+    var legendCat = document.getElementById('legendCategory');
+    legendCat.innerHTML = '';
+    catEntries.forEach(function (e) {
+      var pct = total ? Math.round((e[1] / total) * 100) : 0;
+      var row = document.createElement('div');
+      row.className = 'legend-row';
+      row.innerHTML = '<span class="legend-dot" style="background:' + colorHexFor(e[0]) + '"></span>' +
+        '<span class="legend-name">' + escapeHtml(e[0]) + '</span>' +
+        '<span class="legend-amount">' + formatMoney(e[1]) + '</span>' +
+        '<span class="legend-pct">' + pct + '%</span>';
+      legendCat.appendChild(row);
+    });
+
+    // ---- By payment mode ----
+    var payTotals = {};
+    filtered.forEach(function (e) { payTotals[e.spentUsing] = (payTotals[e.spentUsing] || 0) + Number(e.amount); });
+    var payEntries = Object.keys(payTotals).map(function (k) { return [k, payTotals[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+
+    if (chartPaymentInstance) chartPaymentInstance.destroy();
+    chartPaymentInstance = new Chart(document.getElementById('chartPayment'), {
+      type: 'bar',
+      data: {
+        labels: payEntries.map(function (e) { return e[0]; }),
+        datasets: [{ data: payEntries.map(function (e) { return e[1]; }), backgroundColor: payEntries.map(function (e) { return colorHexFor(e[0]); }), borderRadius: 6, maxBarThickness: 34 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + formatMoney(ctx.parsed.x); } } } },
+        scales: { x: { grid: { color: '#E1DCCF' }, ticks: { callback: function (v) { return '₹' + v; } } }, y: { grid: { display: false } } },
+        maintainAspectRatio: false
+      }
+    });
+
+    var legendPay = document.getElementById('legendPayment');
+    legendPay.innerHTML = '';
+    payEntries.forEach(function (e) {
+      var pct = total ? Math.round((e[1] / total) * 100) : 0;
+      var row = document.createElement('div');
+      row.className = 'legend-row';
+      row.innerHTML = '<span class="legend-dot" style="background:' + colorHexFor(e[0]) + '"></span>' +
+        '<span class="legend-name">' + escapeHtml(e[0]) + '</span>' +
+        '<span class="legend-amount">' + formatMoney(e[1]) + '</span>' +
+        '<span class="legend-pct">' + pct + '%</span>';
+      legendPay.appendChild(row);
+    });
+
+    // ---- Monthly trend (last 6 months, independent of range filter) ----
+    var now = new Date();
+    var months = [];
+    for (var i = 5; i >= 0; i--) {
+      var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ key: d.getFullYear() + '-' + pad2(d.getMonth() + 1), label: d.toLocaleDateString('en-IN', { month: 'short' }) });
+    }
+    var monthTotals = months.map(function (m) {
+      return state.expenses.reduce(function (s, e) { return e.date && e.date.slice(0, 7) === m.key ? s + Number(e.amount) : s; }, 0);
+    });
+
+    if (chartTrendInstance) chartTrendInstance.destroy();
+    chartTrendInstance = new Chart(document.getElementById('chartTrend'), {
+      type: 'bar',
+      data: { labels: months.map(function (m) { return m.label; }), datasets: [{ data: monthTotals, backgroundColor: '#C98A2C', borderRadius: 6, maxBarThickness: 30 }] },
+      options: {
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + formatMoney(ctx.parsed.y); } } } },
+        scales: { y: { grid: { color: '#E1DCCF' }, ticks: { callback: function (v) { return '₹' + v; } } }, x: { grid: { display: false } } },
+        maintainAspectRatio: false
+      }
+    });
+
+    // ---- Top spending days ----
+    var dayTotals = {};
+    filtered.forEach(function (e) { dayTotals[e.date] = (dayTotals[e.date] || 0) + Number(e.amount); });
+    var topDays = Object.keys(dayTotals).map(function (k) { return [k, dayTotals[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 5);
+
+    var topDaysList = document.getElementById('topDaysList');
+    topDaysList.innerHTML = '';
+    topDays.forEach(function (d) {
+      var row = document.createElement('div');
+      row.className = 'top-day-row';
+      row.innerHTML = '<span>' + formatDateDisplay(d[0]) + '</span><span class="top-day-amount">' + formatMoney(d[1]) + '</span>';
+      topDaysList.appendChild(row);
+    });
+  }
 
   // ---------- Load ----------
   var loadingVeil = document.getElementById('loadingVeil');
