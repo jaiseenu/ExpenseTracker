@@ -623,6 +623,30 @@
   .status-pill.outstanding { background: #F4E3CC; color: var(--amber-deep); }
   .status-pill.settled { background: #DCE6DE; color: #3E6350; }
 
+  .person-summary { margin-bottom: 20px; }
+  .person-summary h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 10px;
+  }
+  .person-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .person-row:last-child { border-bottom: none; }
+  .person-row .debt-avatar { width: 30px; height: 30px; font-size: 12.5px; }
+  .person-row .p-name { flex: 1; font-size: 13.5px; color: var(--text); }
+  .person-row .p-net { font-family: 'Fraunces', serif; font-size: 14.5px; font-weight: 600; }
+  .person-row .p-net.owed { color: #4E6E6D; }
+  .person-row .p-net.owe { color: var(--rust); }
+  .person-row .p-net.settled { color: var(--text-muted); font-family: 'Inter', sans-serif; font-weight: 500; font-size: 12.5px; }
+
   /* Detail modal */
   .modal.debt-detail { max-height: 85vh; overflow-y: auto; }
   .detail-head { text-align: center; margin-bottom: 18px; }
@@ -910,6 +934,11 @@
           <div class="summary-label">You owe</div>
           <div class="summary-amount" id="sumYouOwe">₹0</div>
         </div>
+      </div>
+
+      <div class="person-summary" id="personSummary">
+        <h3>By person</h3>
+        <div id="personSummaryList"></div>
       </div>
 
       <button class="add-debt-toggle" id="debtFormToggle">+ Add debt</button>
@@ -1751,6 +1780,48 @@
   var debtList = document.getElementById('debtList');
   var debtEmptyState = document.getElementById('debtEmptyState');
 
+  function renderPersonSummary() {
+    var byPerson = {};
+    state.debts.forEach(function (d) {
+      var out = outstandingForDebt(d.id);
+      if (!byPerson[d.person]) byPerson[d.person] = { lent: 0, borrowed: 0 };
+      if (d.type === 'Lent') byPerson[d.person].lent += out;
+      else byPerson[d.person].borrowed += out;
+    });
+
+    var rows = Object.keys(byPerson).map(function (name) {
+      var v = byPerson[name];
+      return { name: name, net: v.lent - v.borrowed };
+    }).sort(function (a, b) { return Math.abs(b.net) - Math.abs(a.net); });
+
+    var container = document.getElementById('personSummary');
+    var list = document.getElementById('personSummaryList');
+    list.innerHTML = '';
+
+    if (!rows.length) {
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = 'block';
+
+    rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'person-row';
+      var netClass = r.net > 0.005 ? 'owed' : (r.net < -0.005 ? 'owe' : 'settled');
+      var netText = Math.abs(r.net) < 0.005 ? 'Settled' : (r.net > 0 ? '+' + formatMoney(r.net) : '−' + formatMoney(Math.abs(r.net)));
+      row.innerHTML =
+        '<div class="debt-avatar">' + escapeHtml(initialsFor(r.name)) + '</div>' +
+        '<div class="p-name">' + escapeHtml(r.name) + '</div>' +
+        '<div class="p-net ' + netClass + '">' + netText + '</div>';
+      row.addEventListener('click', function () {
+        document.getElementById('searchDebts').value = r.name;
+        renderDebts();
+        document.getElementById('debtList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      list.appendChild(row);
+    });
+  }
+
   function renderDebts() {
     var owedToYou = 0, youOwe = 0;
     state.debts.forEach(function (d) {
@@ -1759,6 +1830,8 @@
     });
     document.getElementById('sumOwedToYou').textContent = formatMoney(owedToYou);
     document.getElementById('sumYouOwe').textContent = formatMoney(youOwe);
+
+    renderPersonSummary();
 
     var typeFilter = document.getElementById('debtTypeFilter').value;
     var statusFilter = document.getElementById('debtStatusFilter').value;
