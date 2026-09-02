@@ -109,12 +109,13 @@
     color: var(--paper);
     opacity: 0.65;
     font-family: 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: 12.5px;
     font-weight: 600;
-    padding: 9px 0;
+    padding: 9px 2px;
     border-radius: 999px;
     cursor: pointer;
     transition: background 0.2s, opacity 0.2s;
+    white-space: nowrap;
   }
   .tab-btn.active {
     background: var(--paper);
@@ -507,6 +508,162 @@
   }
   .top-day-row:last-child { border-bottom: none; }
   .top-day-amount { font-family: 'Fraunces', serif; font-weight: 600; color: var(--ink); }
+
+  /* ---------- Debts ---------- */
+  .debt-toggle {
+    display: flex;
+    background: var(--ink);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 4px;
+  }
+  .debt-toggle-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--paper);
+    opacity: 0.6;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 9px 0;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .debt-toggle-btn.active { background: var(--paper); color: var(--ink); opacity: 1; }
+
+  .debt-filters {
+    display: flex;
+    gap: 8px;
+    margin: 18px 0;
+    overflow-x: auto;
+  }
+  .debt-filters select {
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  .add-debt-toggle {
+    width: 100%;
+    background: var(--paper-alt);
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    margin-bottom: 18px;
+  }
+
+  .debt-form { display: none; margin-bottom: 26px; }
+  .debt-form.active { display: block; }
+
+  .type-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+  .type-toggle button {
+    flex: 1;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    color: var(--text-muted);
+    padding: 10px 0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+  }
+  .type-toggle button.active.lent { background: #5B7B7A; border-color: #5B7B7A; color: var(--paper); }
+  .type-toggle button.active.borrowed { background: var(--rust); border-color: var(--rust); color: var(--paper); }
+
+  .debt-list { border-top: 1px solid var(--line); }
+  .debt-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .debt-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--paper-alt);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .debt-main { flex: 1; min-width: 0; }
+  .debt-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .debt-person { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+  .debt-amount { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; }
+  .debt-amount.lent { color: #4E6E6D; }
+  .debt-amount.borrowed { color: var(--rust); }
+  .debt-meta { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; display: flex; gap: 6px; align-items: center; }
+  .status-pill {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .status-pill.outstanding { background: #F4E3CC; color: var(--amber-deep); }
+  .status-pill.settled { background: #DCE6DE; color: #3E6350; }
+
+  /* Detail modal */
+  .modal.debt-detail { max-height: 85vh; overflow-y: auto; }
+  .detail-head { text-align: center; margin-bottom: 18px; }
+  .detail-head .name { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--ink); }
+  .detail-head .sub { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+  .detail-amounts { display: flex; gap: 10px; margin-bottom: 20px; }
+  .detail-amounts .box { flex: 1; background: var(--paper-alt); border-radius: 10px; padding: 12px; text-align: center; }
+  .detail-amounts .box .lbl { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+  .detail-amounts .box .val { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--ink); }
+
+  .payment-list { margin-bottom: 18px; }
+  .payment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13.5px;
+  }
+  .payment-row .pay-del { color: var(--rust); background: none; border: none; font-size: 12px; cursor: pointer; padding: 4px; }
+
+  .add-payment-row { display: flex; gap: 8px; margin-bottom: 20px; }
+  .add-payment-row input {
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .add-payment-row input[type="date"] { flex: 1.2; }
+  .add-payment-row input[type="number"] { flex: 1; }
+  .add-payment-row button {
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -521,6 +678,7 @@
       <button class="tab-btn active" data-tab="add">Add</button>
       <button class="tab-btn" data-tab="history">History</button>
       <button class="tab-btn" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="debts">Debts</button>
     </div>
   </header>
 
@@ -646,6 +804,89 @@
         <div>No expenses in this range yet.</div>
       </div>
     </section>
+
+    <!-- DEBTS VIEW -->
+    <section class="view" id="view-debts">
+      <div class="summary">
+        <div class="summary-box">
+          <div class="summary-label">You are owed</div>
+          <div class="summary-amount" id="sumOwedToYou">₹0</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">You owe</div>
+          <div class="summary-amount" id="sumYouOwe">₹0</div>
+        </div>
+      </div>
+
+      <button class="add-debt-toggle" id="debtFormToggle">+ Add debt</button>
+
+      <div class="debt-form" id="debtForm">
+        <div class="form-title" id="debtFormTitle">New debt</div>
+
+        <div class="type-toggle" id="debtTypeToggle">
+          <button type="button" class="lent active" data-type="Lent">I lent money</button>
+          <button type="button" class="borrowed" data-type="Borrowed">I borrowed money</button>
+        </div>
+
+        <div class="field">
+          <label for="d-person">Person</label>
+          <input type="text" id="d-person" placeholder="Name" />
+        </div>
+
+        <div class="field">
+          <label for="d-date">Date</label>
+          <input type="date" id="d-date" />
+        </div>
+
+        <div class="field amount">
+          <label for="d-amount">Amount (₹)</label>
+          <input type="number" id="d-amount" inputmode="decimal" placeholder="0" step="0.01" />
+        </div>
+
+        <div class="field">
+          <label for="d-mode">Payment mode</label>
+          <div class="select-wrap">
+            <select id="d-mode"></select>
+          </div>
+          <div class="add-new-row" id="d-mode-add-row">
+            <input type="text" id="d-mode-add-input" placeholder="New payment mode" />
+            <button type="button" id="d-mode-add-confirm">Add</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="d-comments">Comments</label>
+          <textarea id="d-comments" placeholder="Optional note"></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" id="debtSaveBtn">Save debt</button>
+        </div>
+        <div class="btn-row" id="debtEditExtraBtns" style="display:none;">
+          <button class="btn-secondary" id="debtCancelBtn">Cancel</button>
+          <button class="btn-danger" id="debtDeleteBtn">Delete</button>
+        </div>
+      </div>
+
+      <div class="debt-filters">
+        <select id="debtTypeFilter">
+          <option value="">All types</option>
+          <option value="Lent">Lent</option>
+          <option value="Borrowed">Borrowed</option>
+        </select>
+        <select id="debtStatusFilter">
+          <option value="">All statuses</option>
+          <option value="Outstanding">Outstanding</option>
+          <option value="Settled">Settled</option>
+        </select>
+      </div>
+
+      <div class="debt-list" id="debtList"></div>
+      <div class="empty-state" id="debtEmptyState" style="display:none;">
+        <div class="glyph">₹</div>
+        <div>No debts logged yet.</div>
+      </div>
+    </section>
   </main>
 
   <div class="toast" id="toast"></div>
@@ -659,6 +900,41 @@
       </div>
       <div class="btn-row" style="margin-top:14px;">
         <button class="btn-primary" id="saveUrlBtn">Save & connect</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="debtDetailBackdrop">
+    <div class="modal debt-detail">
+      <div class="detail-head">
+        <div class="name" id="detailName">—</div>
+        <div class="sub" id="detailSub">—</div>
+      </div>
+      <div class="detail-amounts">
+        <div class="box">
+          <div class="lbl">Original</div>
+          <div class="val" id="detailOriginal">₹0</div>
+        </div>
+        <div class="box">
+          <div class="lbl">Outstanding</div>
+          <div class="val" id="detailOutstanding">₹0</div>
+        </div>
+      </div>
+
+      <div class="form-title" style="font-size:14px;">Repayments</div>
+      <div class="payment-list" id="detailPaymentList"></div>
+      <div class="add-payment-row">
+        <input type="date" id="d-pay-date" />
+        <input type="number" id="d-pay-amount" placeholder="Amount" inputmode="decimal" step="0.01" />
+        <button type="button" id="d-pay-add">Add</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" id="detailEditBtn">Edit</button>
+        <button class="btn-danger" id="detailDeleteBtn">Delete</button>
+      </div>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn-primary" id="detailCloseBtn">Close</button>
       </div>
     </div>
   </div>
@@ -752,7 +1028,8 @@
   var views = {
     add: document.getElementById('view-add'),
     history: document.getElementById('view-history'),
-    dashboard: document.getElementById('view-dashboard')
+    dashboard: document.getElementById('view-dashboard'),
+    debts: document.getElementById('view-debts')
   };
   tabButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -763,6 +1040,7 @@
       if (btn.dataset.tab === 'add' && state.editingId === null) resetForm();
       if (btn.dataset.tab === 'history') renderHistory();
       if (btn.dataset.tab === 'dashboard') renderDashboard();
+      if (btn.dataset.tab === 'debts') renderDebts();
     });
   });
 
@@ -784,6 +1062,7 @@
   function refreshDropdowns() {
     populateSelect(document.getElementById('f-category'), state.categories);
     populateSelect(document.getElementById('f-spent'), state.paymentModes);
+    populateSelect(document.getElementById('d-mode'), state.paymentModes);
 
     var filterCat = document.getElementById('filterCategory');
     var current = filterCat.value;
@@ -825,6 +1104,22 @@
       document.getElementById('f-spent').value = name;
       document.getElementById('mode-add-row').classList.remove('active');
       document.getElementById('mode-add-input').value = '';
+      toast('Payment mode added');
+    }).catch(function (e) { toast(e.message); });
+  });
+
+  document.getElementById('d-mode').addEventListener('change', function (e) {
+    document.getElementById('d-mode-add-row').classList.toggle('active', e.target.value === '__add__');
+  });
+  document.getElementById('d-mode-add-confirm').addEventListener('click', function () {
+    var name = document.getElementById('d-mode-add-input').value.trim();
+    if (!name) return;
+    call('addPaymentMode', { name: name }).then(function () {
+      state.paymentModes.push(name);
+      refreshDropdowns();
+      document.getElementById('d-mode').value = name;
+      document.getElementById('d-mode-add-row').classList.remove('active');
+      document.getElementById('d-mode-add-input').value = '';
       toast('Payment mode added');
     }).catch(function (e) { toast(e.message); });
   });
@@ -1147,6 +1442,284 @@
     });
   }
 
+  // ---------- Debts ----------
+  state.debts = [];
+  state.debtPayments = [];
+  state.editingDebtId = null;
+  state.debtType = 'Lent';
+  state.activeDebtId = null;
+
+  function outstandingForDebt(debtId) {
+    var debt = state.debts.find(function (d) { return d.id === debtId; });
+    if (!debt) return 0;
+    var paid = state.debtPayments.filter(function (p) { return p.debtId === debtId; })
+      .reduce(function (s, p) { return s + Number(p.amount); }, 0);
+    var out = Number(debt.amount) - paid;
+    return out < 0.005 ? 0 : out;
+  }
+
+  function initialsFor(name) {
+    var parts = (name || '').trim().split(/\s+/);
+    if (!parts[0]) return '?';
+    return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+  }
+
+  document.getElementById('debtFormToggle').addEventListener('click', function () {
+    var form = document.getElementById('debtForm');
+    if (form.classList.contains('active') && state.editingDebtId === null) {
+      form.classList.remove('active');
+    } else {
+      resetDebtForm();
+      form.classList.add('active');
+    }
+  });
+
+  document.querySelectorAll('#debtTypeToggle button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#debtTypeToggle button').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.debtType = btn.dataset.type;
+    });
+  });
+
+  function resetDebtForm() {
+    state.editingDebtId = null;
+    document.getElementById('debtFormTitle').textContent = 'New debt';
+    document.getElementById('d-person').value = '';
+    document.getElementById('d-date').value = todayStr();
+    document.getElementById('d-amount').value = '';
+    document.getElementById('d-mode').value = state.paymentModes[0] || '';
+    document.getElementById('d-comments').value = '';
+    document.getElementById('debtSaveBtn').textContent = 'Save debt';
+    document.getElementById('debtEditExtraBtns').style.display = 'none';
+    document.getElementById('d-mode-add-row').classList.remove('active');
+    state.debtType = 'Lent';
+    document.querySelectorAll('#debtTypeToggle button').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.type === 'Lent');
+    });
+  }
+
+  function openDebtFormForEdit(debt) {
+    state.editingDebtId = debt.id;
+    document.getElementById('debtFormTitle').textContent = 'Edit debt';
+    document.getElementById('d-person').value = debt.person;
+    document.getElementById('d-date').value = debt.date;
+    document.getElementById('d-amount').value = debt.amount;
+    document.getElementById('d-mode').value = debt.paymentMode;
+    document.getElementById('d-comments').value = debt.comments || '';
+    document.getElementById('debtSaveBtn').textContent = 'Save changes';
+    document.getElementById('debtEditExtraBtns').style.display = 'flex';
+    state.debtType = debt.type;
+    document.querySelectorAll('#debtTypeToggle button').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.type === debt.type);
+    });
+    document.getElementById('debtForm').classList.add('active');
+    document.getElementById('debtForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.getElementById('debtCancelBtn').addEventListener('click', function () {
+    document.getElementById('debtForm').classList.remove('active');
+    resetDebtForm();
+  });
+
+  document.getElementById('debtSaveBtn').addEventListener('click', function () {
+    var person = document.getElementById('d-person').value.trim();
+    var date = document.getElementById('d-date').value;
+    var amount = document.getElementById('d-amount').value;
+    var mode = document.getElementById('d-mode').value;
+    var comments = document.getElementById('d-comments').value;
+
+    if (!person || !date || !amount || !mode || mode === '__add__') {
+      toast('Please fill person, date, amount and payment mode');
+      return;
+    }
+
+    var payload = { date: date, type: state.debtType, person: person, amount: amount, paymentMode: mode, comments: comments };
+
+    if (state.editingDebtId) {
+      payload.id = state.editingDebtId;
+      call('editDebt', payload).then(function () {
+        var idx = state.debts.findIndex(function (d) { return d.id === state.editingDebtId; });
+        if (idx !== -1) state.debts[idx] = Object.assign({ id: state.editingDebtId }, payload, { amount: Number(amount) });
+        toast('Saved');
+        document.getElementById('debtForm').classList.remove('active');
+        resetDebtForm();
+        renderDebts();
+      }).catch(function (e) { toast(e.message); });
+    } else {
+      call('addDebt', payload).then(function (res) {
+        state.debts.unshift(Object.assign({ id: res.id, createdAt: new Date().toISOString() }, payload, { amount: Number(amount) }));
+        toast('Debt added');
+        document.getElementById('debtForm').classList.remove('active');
+        resetDebtForm();
+        renderDebts();
+      }).catch(function (e) { toast(e.message); });
+    }
+  });
+
+  document.getElementById('debtDeleteBtn').addEventListener('click', function () {
+    if (!state.editingDebtId) return;
+    if (!confirm('Delete this debt and its repayment history?')) return;
+    var id = state.editingDebtId;
+    call('deleteDebt', { id: id }).then(function () {
+      state.debts = state.debts.filter(function (d) { return d.id !== id; });
+      state.debtPayments = state.debtPayments.filter(function (p) { return p.debtId !== id; });
+      toast('Deleted');
+      document.getElementById('debtForm').classList.remove('active');
+      resetDebtForm();
+      renderDebts();
+    }).catch(function (e) { toast(e.message); });
+  });
+
+  ['debtTypeFilter', 'debtStatusFilter'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', renderDebts);
+  });
+
+  var debtList = document.getElementById('debtList');
+  var debtEmptyState = document.getElementById('debtEmptyState');
+
+  function renderDebts() {
+    var owedToYou = 0, youOwe = 0;
+    state.debts.forEach(function (d) {
+      var out = outstandingForDebt(d.id);
+      if (d.type === 'Lent') owedToYou += out; else youOwe += out;
+    });
+    document.getElementById('sumOwedToYou').textContent = formatMoney(owedToYou);
+    document.getElementById('sumYouOwe').textContent = formatMoney(youOwe);
+
+    var typeFilter = document.getElementById('debtTypeFilter').value;
+    var statusFilter = document.getElementById('debtStatusFilter').value;
+
+    var filtered = state.debts.filter(function (d) {
+      if (typeFilter && d.type !== typeFilter) return false;
+      var out = outstandingForDebt(d.id);
+      var status = out <= 0 ? 'Settled' : 'Outstanding';
+      if (statusFilter && status !== statusFilter) return false;
+      return true;
+    });
+
+    debtList.innerHTML = '';
+    debtEmptyState.style.display = filtered.length ? 'none' : 'block';
+
+    filtered.forEach(function (d) {
+      var out = outstandingForDebt(d.id);
+      var status = out <= 0 ? 'Settled' : 'Outstanding';
+      var row = document.createElement('div');
+      row.className = 'debt-row';
+      row.innerHTML =
+        '<div class="debt-avatar">' + escapeHtml(initialsFor(d.person)) + '</div>' +
+        '<div class="debt-main">' +
+          '<div class="debt-top">' +
+            '<div class="debt-person">' + escapeHtml(d.person) + '</div>' +
+            '<div class="debt-amount ' + (d.type === 'Lent' ? 'lent' : 'borrowed') + '">' + formatMoney(out) + '</div>' +
+          '</div>' +
+          '<div class="debt-meta">' +
+            '<span>' + (d.type === 'Lent' ? 'Lent' : 'Borrowed') + '</span><span>·</span><span>' + formatDateDisplay(d.date) + '</span>' +
+            '<span class="status-pill ' + status.toLowerCase() + '">' + status + '</span>' +
+          '</div>' +
+        '</div>';
+      row.addEventListener('click', function () { openDebtDetail(d.id); });
+      debtList.appendChild(row);
+    });
+  }
+
+  // ---- Debt detail modal ----
+  var debtDetailBackdrop = document.getElementById('debtDetailBackdrop');
+
+  function openDebtDetail(debtId) {
+    state.activeDebtId = debtId;
+    renderDebtDetail();
+    debtDetailBackdrop.classList.add('active');
+  }
+  function closeDebtDetail() {
+    debtDetailBackdrop.classList.remove('active');
+    state.activeDebtId = null;
+  }
+  debtDetailBackdrop.addEventListener('click', function (e) {
+    if (e.target === debtDetailBackdrop) closeDebtDetail();
+  });
+  document.getElementById('detailCloseBtn').addEventListener('click', closeDebtDetail);
+
+  function renderDebtDetail() {
+    var debt = state.debts.find(function (d) { return d.id === state.activeDebtId; });
+    if (!debt) { closeDebtDetail(); return; }
+    var out = outstandingForDebt(debt.id);
+
+    document.getElementById('detailName').textContent = debt.person;
+    document.getElementById('detailSub').textContent = (debt.type === 'Lent' ? 'You lent · ' : 'You borrowed · ') + formatDateDisplay(debt.date) + ' · ' + debt.paymentMode;
+    document.getElementById('detailOriginal').textContent = formatMoney(debt.amount);
+    document.getElementById('detailOutstanding').textContent = formatMoney(out);
+    document.getElementById('d-pay-date').value = todayStr();
+    document.getElementById('d-pay-amount').value = '';
+
+    var payments = state.debtPayments.filter(function (p) { return p.debtId === debt.id; })
+      .sort(function (a, b) { return b.date.localeCompare(a.date); });
+
+    var list = document.getElementById('detailPaymentList');
+    list.innerHTML = '';
+    if (!payments.length) {
+      list.innerHTML = '<div style="font-size:13px; color:var(--text-muted); padding:8px 0;">No repayments logged yet.</div>';
+    }
+    payments.forEach(function (p) {
+      var row = document.createElement('div');
+      row.className = 'payment-row';
+      row.innerHTML = '<span>' + formatDateDisplay(p.date) + '</span><span style="display:flex; align-items:center; gap:10px;"><span>' + formatMoney(p.amount) + '</span><button class="pay-del" data-id="' + p.id + '">Remove</button></span>';
+      list.appendChild(row);
+    });
+    list.querySelectorAll('.pay-del').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.id;
+        call('deleteDebtPayment', { id: id }).then(function () {
+          state.debtPayments = state.debtPayments.filter(function (p) { return p.id !== id; });
+          renderDebtDetail();
+          renderDebts();
+          toast('Repayment removed');
+        }).catch(function (e) { toast(e.message); });
+      });
+    });
+  }
+
+  document.getElementById('d-pay-add').addEventListener('click', function () {
+    var debtId = state.activeDebtId;
+    if (!debtId) return;
+    var date = document.getElementById('d-pay-date').value;
+    var amount = document.getElementById('d-pay-amount').value;
+    if (!date || !amount || Number(amount) <= 0) {
+      toast('Enter a valid date and amount');
+      return;
+    }
+    call('addDebtPayment', { debtId: debtId, date: date, amount: amount }).then(function (res) {
+      state.debtPayments.push({ id: res.id, debtId: debtId, date: date, amount: Number(amount), createdAt: new Date().toISOString() });
+      renderDebtDetail();
+      renderDebts();
+      toast('Repayment added');
+    }).catch(function (e) { toast(e.message); });
+  });
+
+  document.getElementById('detailEditBtn').addEventListener('click', function () {
+    var debt = state.debts.find(function (d) { return d.id === state.activeDebtId; });
+    if (!debt) return;
+    closeDebtDetail();
+    tabButtons.forEach(function (b) { b.classList.remove('active'); });
+    document.querySelector('.tab-btn[data-tab="debts"]').classList.add('active');
+    Object.keys(views).forEach(function (k) { views[k].classList.remove('active'); });
+    views.debts.classList.add('active');
+    openDebtFormForEdit(debt);
+  });
+
+  document.getElementById('detailDeleteBtn').addEventListener('click', function () {
+    var id = state.activeDebtId;
+    if (!id) return;
+    if (!confirm('Delete this debt and its repayment history?')) return;
+    call('deleteDebt', { id: id }).then(function () {
+      state.debts = state.debts.filter(function (d) { return d.id !== id; });
+      state.debtPayments = state.debtPayments.filter(function (p) { return p.debtId !== id; });
+      closeDebtDetail();
+      renderDebts();
+      toast('Deleted');
+    }).catch(function (e) { toast(e.message); });
+  });
+
   // ---------- Load ----------
   var loadingVeil = document.getElementById('loadingVeil');
 
@@ -1161,9 +1734,12 @@
       state.expenses = res.expenses || [];
       state.categories = res.categories || [];
       state.paymentModes = res.paymentModes || [];
+      state.debts = res.debts || [];
+      state.debtPayments = res.debtPayments || [];
       refreshDropdowns();
       resetForm();
       renderHistory();
+      renderDebts();
       loadingVeil.classList.add('hidden');
     }).catch(function (e) {
       loadingVeil.classList.add('hidden');
