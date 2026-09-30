@@ -2124,31 +2124,64 @@
   // ---------- Load ----------
   var loadingVeil = document.getElementById('loadingVeil');
 
+  function cacheKey() { return 'ledger_cache_v1::' + state.apiUrl; }
+
+  function readCache() {
+    try {
+      var raw = localStorage.getItem(cacheKey());
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  function writeCache(data) {
+    try { localStorage.setItem(cacheKey(), JSON.stringify(data)); } catch (e) { /* storage full or unavailable — skip caching */ }
+  }
+
+  function applyData(res) {
+    state.expenses = res.expenses || [];
+    state.categories = res.categories || [];
+    state.paymentModes = res.paymentModes || [];
+    state.debts = res.debts || [];
+    state.debtPayments = res.debtPayments || [];
+    state.budgets = res.budgets || [];
+    refreshDropdowns();
+    refreshPersonList();
+    renderHistory();
+    renderDebts();
+    renderBudgetProgress();
+  }
+
   function loadAll() {
     if (!state.apiUrl) {
       loadingVeil.classList.add('hidden');
       openSettings();
       return;
     }
-    loadingVeil.classList.remove('hidden');
-    call('getData').then(function (res) {
-      state.expenses = res.expenses || [];
-      state.categories = res.categories || [];
-      state.paymentModes = res.paymentModes || [];
-      state.debts = res.debts || [];
-      state.debtPayments = res.debtPayments || [];
-      state.budgets = res.budgets || [];
-      refreshDropdowns();
-      refreshPersonList();
+
+    var cached = readCache();
+    if (cached) {
+      // Show what we have instantly, no spinner — then quietly refresh from the sheet.
+      applyData(cached);
       resetForm();
-      renderHistory();
-      renderDebts();
-      renderBudgetProgress();
       loadingVeil.classList.add('hidden');
-    }).catch(function (e) {
-      loadingVeil.classList.add('hidden');
-      toast('Could not load: ' + e.message);
-    });
+      call('getData').then(function (res) {
+        applyData(res);
+        writeCache(res);
+      }).catch(function () {
+        // Background refresh failed — keep showing the cached data, no need to interrupt.
+      });
+    } else {
+      loadingVeil.classList.remove('hidden');
+      call('getData').then(function (res) {
+        applyData(res);
+        writeCache(res);
+        resetForm();
+        loadingVeil.classList.add('hidden');
+      }).catch(function (e) {
+        loadingVeil.classList.add('hidden');
+        toast('Could not load: ' + e.message);
+      });
+    }
   }
 
   document.getElementById('f-date').value = todayStr();
