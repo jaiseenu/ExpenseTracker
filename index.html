@@ -1248,26 +1248,28 @@
   document.getElementById('cat-add-confirm').addEventListener('click', function () {
     var name = document.getElementById('cat-add-input').value.trim();
     if (!name) return;
-    call('addCategory', { name: name }).then(function () {
-      state.categories.push(name);
+    call('addCategory', { name: name }).then(function (res) {
+      var existing = state.categories.find(function (c) { return c.toLowerCase() === name.toLowerCase(); });
+      if (!existing) state.categories.push(name);
       refreshDropdowns();
-      document.getElementById('f-category').value = name;
+      document.getElementById('f-category').value = existing || name;
       document.getElementById('cat-add-row').classList.remove('active');
       document.getElementById('cat-add-input').value = '';
-      toast('Category added');
+      toast(res.alreadyExists ? 'That category already exists' : 'Category added');
     }).catch(function (e) { toast(e.message); });
   });
 
   document.getElementById('mode-add-confirm').addEventListener('click', function () {
     var name = document.getElementById('mode-add-input').value.trim();
     if (!name) return;
-    call('addPaymentMode', { name: name }).then(function () {
-      state.paymentModes.push(name);
+    call('addPaymentMode', { name: name }).then(function (res) {
+      var existing = state.paymentModes.find(function (m) { return m.toLowerCase() === name.toLowerCase(); });
+      if (!existing) state.paymentModes.push(name);
       refreshDropdowns();
-      document.getElementById('f-spent').value = name;
+      document.getElementById('f-spent').value = existing || name;
       document.getElementById('mode-add-row').classList.remove('active');
       document.getElementById('mode-add-input').value = '';
-      toast('Payment mode added');
+      toast(res.alreadyExists ? 'That payment mode already exists' : 'Payment mode added');
     }).catch(function (e) { toast(e.message); });
   });
 
@@ -1277,13 +1279,14 @@
   document.getElementById('d-mode-add-confirm').addEventListener('click', function () {
     var name = document.getElementById('d-mode-add-input').value.trim();
     if (!name) return;
-    call('addPaymentMode', { name: name }).then(function () {
-      state.paymentModes.push(name);
+    call('addPaymentMode', { name: name }).then(function (res) {
+      var existing = state.paymentModes.find(function (m) { return m.toLowerCase() === name.toLowerCase(); });
+      if (!existing) state.paymentModes.push(name);
       refreshDropdowns();
-      document.getElementById('d-mode').value = name;
+      document.getElementById('d-mode').value = existing || name;
       document.getElementById('d-mode-add-row').classList.remove('active');
       document.getElementById('d-mode-add-input').value = '';
-      toast('Payment mode added');
+      toast(res.alreadyExists ? 'That payment mode already exists' : 'Payment mode added');
     }).catch(function (e) { toast(e.message); });
   });
 
@@ -1300,6 +1303,8 @@
     document.getElementById('editExtraBtns').style.display = 'none';
     document.getElementById('cat-add-row').classList.remove('active');
     document.getElementById('mode-add-row').classList.remove('active');
+    document.getElementById('cat-add-input').value = '';
+    document.getElementById('mode-add-input').value = '';
   }
 
   function openForEdit(expense) {
@@ -1502,8 +1507,6 @@
   });
 
   function renderDashboard() {
-    if (typeof Chart === 'undefined') return;
-
     var range = getDashRange();
     var filtered = state.expenses.filter(function (e) { return e.date >= range.from && e.date <= range.to; });
 
@@ -1525,24 +1528,28 @@
     sections.forEach(function (s) { s.style.display = 'block'; });
     dashEmpty.style.display = 'none';
 
+    var chartsAvailable = typeof Chart !== 'undefined';
+
     // ---- By category ----
     var catTotals = {};
     filtered.forEach(function (e) { catTotals[e.category] = (catTotals[e.category] || 0) + Number(e.amount); });
     var catEntries = Object.keys(catTotals).map(function (k) { return [k, catTotals[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
 
-    if (chartCategoryInstance) chartCategoryInstance.destroy();
-    chartCategoryInstance = new Chart(document.getElementById('chartCategory'), {
-      type: 'doughnut',
-      data: {
-        labels: catEntries.map(function (e) { return e[0]; }),
-        datasets: [{ data: catEntries.map(function (e) { return e[1]; }), backgroundColor: catEntries.map(function (e) { return colorHexFor(e[0]); }), borderWidth: 0 }]
-      },
-      options: {
-        cutout: '68%',
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + ctx.label + ': ' + formatMoney(ctx.parsed); } } } },
-        maintainAspectRatio: false
-      }
-    });
+    if (chartsAvailable) {
+      if (chartCategoryInstance) chartCategoryInstance.destroy();
+      chartCategoryInstance = new Chart(document.getElementById('chartCategory'), {
+        type: 'doughnut',
+        data: {
+          labels: catEntries.map(function (e) { return e[0]; }),
+          datasets: [{ data: catEntries.map(function (e) { return e[1]; }), backgroundColor: catEntries.map(function (e) { return colorHexFor(e[0]); }), borderWidth: 0 }]
+        },
+        options: {
+          cutout: '68%',
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + ctx.label + ': ' + formatMoney(ctx.parsed); } } } },
+          maintainAspectRatio: false
+        }
+      });
+    }
 
     var legendCat = document.getElementById('legendCategory');
     legendCat.innerHTML = '';
@@ -1562,20 +1569,22 @@
     filtered.forEach(function (e) { payTotals[e.spentUsing] = (payTotals[e.spentUsing] || 0) + Number(e.amount); });
     var payEntries = Object.keys(payTotals).map(function (k) { return [k, payTotals[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
 
-    if (chartPaymentInstance) chartPaymentInstance.destroy();
-    chartPaymentInstance = new Chart(document.getElementById('chartPayment'), {
-      type: 'bar',
-      data: {
-        labels: payEntries.map(function (e) { return e[0]; }),
-        datasets: [{ data: payEntries.map(function (e) { return e[1]; }), backgroundColor: payEntries.map(function (e) { return colorHexFor(e[0]); }), borderRadius: 6, maxBarThickness: 34 }]
-      },
-      options: {
-        indexAxis: 'y',
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + formatMoney(ctx.parsed.x); } } } },
-        scales: { x: { grid: { color: '#E1DCCF' }, ticks: { callback: function (v) { return '₹' + v; } } }, y: { grid: { display: false } } },
-        maintainAspectRatio: false
-      }
-    });
+    if (chartsAvailable) {
+      if (chartPaymentInstance) chartPaymentInstance.destroy();
+      chartPaymentInstance = new Chart(document.getElementById('chartPayment'), {
+        type: 'bar',
+        data: {
+          labels: payEntries.map(function (e) { return e[0]; }),
+          datasets: [{ data: payEntries.map(function (e) { return e[1]; }), backgroundColor: payEntries.map(function (e) { return colorHexFor(e[0]); }), borderRadius: 6, maxBarThickness: 34 }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + formatMoney(ctx.parsed.x); } } } },
+          scales: { x: { grid: { color: '#E1DCCF' }, ticks: { callback: function (v) { return '₹' + v; } } }, y: { grid: { display: false } } },
+          maintainAspectRatio: false
+        }
+      });
+    }
 
     var legendPay = document.getElementById('legendPayment');
     legendPay.innerHTML = '';
@@ -1601,16 +1610,18 @@
       return state.expenses.reduce(function (s, e) { return e.date && e.date.slice(0, 7) === m.key ? s + Number(e.amount) : s; }, 0);
     });
 
-    if (chartTrendInstance) chartTrendInstance.destroy();
-    chartTrendInstance = new Chart(document.getElementById('chartTrend'), {
-      type: 'bar',
-      data: { labels: months.map(function (m) { return m.label; }), datasets: [{ data: monthTotals, backgroundColor: '#C98A2C', borderRadius: 6, maxBarThickness: 30 }] },
-      options: {
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + formatMoney(ctx.parsed.y); } } } },
-        scales: { y: { grid: { color: '#E1DCCF' }, ticks: { callback: function (v) { return '₹' + v; } } }, x: { grid: { display: false } } },
-        maintainAspectRatio: false
-      }
-    });
+    if (chartsAvailable) {
+      if (chartTrendInstance) chartTrendInstance.destroy();
+      chartTrendInstance = new Chart(document.getElementById('chartTrend'), {
+        type: 'bar',
+        data: { labels: months.map(function (m) { return m.label; }), datasets: [{ data: monthTotals, backgroundColor: '#C98A2C', borderRadius: 6, maxBarThickness: 30 }] },
+        options: {
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ' ' + formatMoney(ctx.parsed.y); } } } },
+          scales: { y: { grid: { color: '#E1DCCF' }, ticks: { callback: function (v) { return '₹' + v; } } }, x: { grid: { display: false } } },
+          maintainAspectRatio: false
+        }
+      });
+    }
 
     // ---- Top spending days ----
     var dayTotals = {};
@@ -1690,6 +1701,7 @@
     document.getElementById('debtSaveBtn').textContent = 'Save debt';
     document.getElementById('debtEditExtraBtns').style.display = 'none';
     document.getElementById('d-mode-add-row').classList.remove('active');
+    document.getElementById('d-mode-add-input').value = '';
     state.debtType = 'Lent';
     document.querySelectorAll('#debtTypeToggle button').forEach(function (b) {
       b.classList.toggle('active', b.dataset.type === 'Lent');
@@ -2018,9 +2030,15 @@
 
   // ---------- Budgets ----------
   state.budgets = [];
+  var OVERALL_BUDGET_KEY = '__OVERALL__'; // internal key, shown to the user as "Overall" — avoids clashing with a real category of that name
 
   function budgetFor(category) {
     var b = state.budgets.find(function (b) { return b.category === category; });
+    if (!b && category === OVERALL_BUDGET_KEY) {
+      // migration shim: earlier builds stored the overall budget under the plain
+      // name "Overall", which could collide with a real category of that name
+      b = state.budgets.find(function (b) { return b.category === 'Overall'; });
+    }
     return b ? Number(b.amount) : null;
   }
 
@@ -2042,14 +2060,14 @@
     var list = document.getElementById('budgetProgressList');
     list.innerHTML = '';
 
-    var overallBudget = budgetFor('Overall');
+    var overallBudget = budgetFor(OVERALL_BUDGET_KEY);
     var rows = [];
-    if (overallBudget) {
+    if (overallBudget != null) {
       rows.push({ label: 'Overall', spent: totals.overall, budget: overallBudget, bold: true });
     }
     state.categories.forEach(function (c) {
       var b = budgetFor(c);
-      if (b) rows.push({ label: c, spent: totals.byCategory[c] || 0, budget: b });
+      if (b != null) rows.push({ label: c, spent: totals.byCategory[c] || 0, budget: b });
     });
 
     if (!rows.length) {
@@ -2058,8 +2076,8 @@
     }
 
     rows.forEach(function (r) {
-      var pct = r.budget ? Math.min(100, Math.round((r.spent / r.budget) * 100)) : 0;
-      var over = r.spent > r.budget;
+      var pct = r.budget > 0 ? Math.min(100, Math.round((r.spent / r.budget) * 100)) : (r.spent > 0 ? 100 : 0);
+      var over = r.budget > 0 ? r.spent > r.budget : r.spent > 0;
       var row = document.createElement('div');
       row.className = 'budget-row';
       row.innerHTML =
@@ -2072,14 +2090,15 @@
 
   var budgetsModalBackdrop = document.getElementById('budgetsModalBackdrop');
   document.getElementById('manageBudgetsBtn').addEventListener('click', function () {
-    document.getElementById('budget-overall').value = budgetFor('Overall') || '';
+    var overallExisting = budgetFor(OVERALL_BUDGET_KEY);
+    document.getElementById('budget-overall').value = overallExisting != null ? overallExisting : '';
     var container = document.getElementById('budgetCategoryInputs');
     container.innerHTML = '';
     state.categories.forEach(function (c) {
       var row = document.createElement('div');
       row.className = 'budget-input-row';
       var existing = budgetFor(c);
-      row.innerHTML = '<label>' + escapeHtml(c) + '</label><input type="number" inputmode="decimal" data-category="' + escapeHtml(c) + '" value="' + (existing || '') + '" placeholder="₹" />';
+      row.innerHTML = '<label>' + escapeHtml(c) + '</label><input type="number" inputmode="decimal" data-category="' + escapeHtml(c) + '" value="' + (existing != null ? existing : '') + '" placeholder="₹" />';
       container.appendChild(row);
     });
     budgetsModalBackdrop.classList.add('active');
@@ -2094,7 +2113,7 @@
 
     var updates = [];
     var overallVal = document.getElementById('budget-overall').value;
-    updates.push({ category: 'Overall', value: overallVal });
+    updates.push({ category: OVERALL_BUDGET_KEY, value: overallVal });
     document.querySelectorAll('#budgetCategoryInputs input').forEach(function (input) {
       updates.push({ category: input.dataset.category, value: input.value });
     });
@@ -2183,8 +2202,6 @@
       });
     }
   }
-
-  document.getElementById('f-date').value = todayStr();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
