@@ -1,4 +1,8 @@
-const CACHE_NAME = 'ledger-v1';
+// v2 — was cache-first for index.html, which meant once a phone cached it,
+// every later update to this app was invisible until the SW file itself
+// changed. Now network-first: always try to fetch the latest file, and only
+// fall back to the cached copy when there's no connection.
+const CACHE_NAME = 'ledger-v2';
 const SHELL_FILES = [
   './index.html',
   './manifest.json',
@@ -30,16 +34,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Only handle our own same-origin shell files this way; let everything
+  // else (Google Fonts, Chart.js CDN) pass through to the browser's own
+  // default handling.
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return (
-        cached ||
-        fetch(event.request).then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          return response;
-        }).catch(() => cached)
-      );
-    })
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
